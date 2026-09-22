@@ -1,0 +1,1331 @@
+--[[
+    ねこなのはぶ CatUI 統合版
+    固定円の半径25 + 固定最強 + アンチ全追加 + スパムキック + 選択→実行式スパムキック版
+]]
+--[[
+    ねこなのはぶ CatUI 統合版
+    メイン機能 + ESP機能 組み合わせ
+]]
+
+local P = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("ReplicatedStorage")
+local WS = game:GetService("Workspace")
+local LP = P.LocalPlayer
+
+-- 起動チャット
+task.spawn(function()
+    task.wait(1)
+    local m = "ねこなのはぶ🐱"
+    local c = RS:FindFirstChild("DefaultChatSystemChatEvents")
+    if c and c:FindFirstChild("SayMessageRequest") then
+        pcall(function() c.SayMessageRequest:FireServer(m, "All") end)
+    else
+        local TC = game:GetService("TextChatService")
+        if TC.TextChannels:FindFirstChild("RBXGeneral") then
+            pcall(function() TC.TextChannels.RBXGeneral:SendAsync(m) end)
+        end
+    end
+end)
+
+-- 既存UI削除
+local o = LP:WaitForChild("PlayerGui"):FindFirstChild("CatUI")
+if o then o:Destroy() end
+
+local G = Instance.new("ScreenGui")
+G.Name = "CatUI"
+G.ResetOnSpawn = false
+G.IgnoreGuiInset = true
+G.Parent = LP:WaitForChild("PlayerGui")
+
+-- トグルボタン
+local T = Instance.new("TextButton")
+T.Size = UDim2.new(0, 65, 0, 65)
+T.Position = UDim2.new(0, 20, 0.5, -32)
+T.BackgroundColor3 = Color3.fromRGB(255, 150, 200)
+T.BorderSizePixel = 0
+T.Text = "🐾"
+T.TextScaled = true
+T.Parent = G
+Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
+local tS = Instance.new("UIStroke", T)
+tS.Color = Color3.fromRGB(255, 90, 160)
+tS.Thickness = 3
+
+-- メインフレーム
+local M = Instance.new("Frame")
+M.Name = "MainFrame"
+M.Size = UDim2.new(0, 550, 0, 400)
+M.Position = UDim2.new(0.5, -275, 0.5, -200)
+M.BackgroundColor3 = Color3.fromRGB(255, 230, 245)
+M.BorderSizePixel = 0
+M.Visible = false
+M.Active = true
+M.Parent = G
+Instance.new("UICorner", M).CornerRadius = UDim.new(0, 18)
+local mS = Instance.new("UIStroke", M)
+mS.Color = Color3.fromRGB(255, 100, 170)
+mS.Thickness = 3
+
+-- ヘッダー
+local H = Instance.new("Frame")
+H.Size = UDim2.new(1, 0, 0, 50)
+H.BackgroundColor3 = Color3.fromRGB(255, 150, 200)
+H.BorderSizePixel = 0
+H.ZIndex = 2
+H.Parent = M
+Instance.new("UICorner", H).CornerRadius = UDim.new(0, 18)
+local HC = Instance.new("Frame")
+HC.Size = UDim2.new(1, 0, 0, 20)
+HC.Position = UDim2.new(0, 0, 1, -20)
+HC.BackgroundColor3 = Color3.fromRGB(255, 150, 200)
+HC.BorderSizePixel = 0
+HC.ZIndex = 2
+HC.Parent = H
+local HT = Instance.new("TextLabel")
+HT.Size = UDim2.new(1, -110, 1, 0)
+HT.Position = UDim2.new(0, 55, 0, 0)
+HT.BackgroundTransparency = 1
+HT.Text = "ねこなの"
+HT.TextColor3 = Color3.fromRGB(255, 255, 255)
+HT.TextScaled = true
+HT.Font = Enum.Font.GothamBold
+HT.TextXAlignment = Enum.TextXAlignment.Left
+HT.ZIndex = 3
+HT.Parent = H
+local HP = Instance.new("TextLabel")
+HP.Size = UDim2.new(0, 50, 1, 0)
+HP.Position = UDim2.new(0, 5, 0, 0)
+HP.BackgroundTransparency = 1
+HP.Text = "🐾"
+HP.TextScaled = true
+HP.ZIndex = 3
+HP.Parent = H
+local CB = Instance.new("TextButton")
+CB.Size = UDim2.new(0, 36, 0, 36)
+CB.Position = UDim2.new(1, -44, 0, 7)
+CB.BackgroundColor3 = Color3.fromRGB(255, 90, 160)
+CB.BorderSizePixel = 0
+CB.Text = "✕"
+CB.TextColor3 = Color3.fromRGB(255, 255, 255)
+CB.TextScaled = true
+CB.Font = Enum.Font.GothamBold
+CB.ZIndex = 3
+CB.Parent = H
+Instance.new("UICorner", CB).CornerRadius = UDim.new(1, 0)
+
+-- タブバー
+local TB = Instance.new("Frame")
+TB.Size = UDim2.new(1, -10, 0, 30)
+TB.Position = UDim2.new(0, 5, 0, 55)
+TB.BackgroundTransparency = 1
+TB.ZIndex = 2
+TB.Parent = M
+local TL = Instance.new("UIListLayout", TB)
+TL.FillDirection = Enum.FillDirection.Horizontal
+TL.Padding = UDim.new(0, 5)
+TL.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function mkTab(n, o)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0, 90, 0, 30)
+    b.BackgroundColor3 = Color3.fromRGB(255, 190, 220)
+    b.BorderSizePixel = 0
+    b.Text = n
+    b.TextColor3 = Color3.fromRGB(120, 30, 70)
+    b.TextScaled = true
+    b.Font = Enum.Font.GothamBold
+    b.LayoutOrder = o
+    b.ZIndex = 3
+    b.Parent = TB
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+    return b
+end
+local BM = mkTab("メイン", 1)
+local BP = mkTab("プレイヤー", 2)
+local BE = mkTab("ESP", 3)
+
+local function mkSC(v)
+    local s = Instance.new("ScrollingFrame")
+    s.Size = UDim2.new(1, -10, 1, -95)
+    s.Position = UDim2.new(0, 5, 0, 90)
+    s.BackgroundTransparency = 1
+    s.BorderSizePixel = 0
+    s.ScrollBarThickness = 6
+    s.ScrollBarImageColor3 = Color3.fromRGB(255, 130, 190)
+    s.CanvasSize = UDim2.new(0, 0, 0, 0)
+    s.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    s.ZIndex = 2
+    s.Visible = v
+    s.Parent = M
+    local l = Instance.new("UIListLayout", s)
+    l.Padding = UDim.new(0, 8)
+    l.SortOrder = Enum.SortOrder.LayoutOrder
+    local p = Instance.new("UIPadding", s)
+    p.PaddingTop = UDim.new(0, 5)
+    p.PaddingBottom = UDim.new(0, 5)
+    p.PaddingLeft = UDim.new(0, 5)
+    p.PaddingRight = UDim.new(0, 5)
+    return s
+end
+local MSC = mkSC(true)
+local PSC = mkSC(false)
+local ESC = mkSC(false)
+
+BM.MouseButton1Click:Connect(function() MSC.Visible = true PSC.Visible = false ESC.Visible = false end)
+BP.MouseButton1Click:Connect(function() MSC.Visible = false PSC.Visible = true ESC.Visible = false end)
+BE.MouseButton1Click:Connect(function() MSC.Visible = false PSC.Visible = false ESC.Visible = true end)
+
+-- BHカウンター
+local BH = Instance.new("TextLabel")
+BH.Size = UDim2.new(0, 120, 0, 32)
+BH.Position = UDim2.new(1, -130, 0, 75)
+BH.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+BH.BackgroundTransparency = 0.1
+BH.BorderSizePixel = 0
+BH.Text = "BH: 0"
+BH.TextColor3 = Color3.fromRGB(150, 40, 90)
+BH.TextScaled = true
+BH.Font = Enum.Font.GothamBold
+BH.ZIndex = 10
+BH.Parent = G
+Instance.new("UICorner", BH).CornerRadius = UDim.new(0, 8)
+local bS = Instance.new("UIStroke", BH)
+bS.Color = Color3.fromRGB(255, 100, 170)
+bS.Thickness = 2
+
+-- カード・ボタン作成関数
+local function card(pa, h)
+    local c = Instance.new("Frame")
+    c.Size = UDim2.new(1, -10, 0, h)
+    c.BackgroundColor3 = Color3.fromRGB(255, 245, 252)
+    c.BorderSizePixel = 0
+    c.ZIndex = 2
+    c.Parent = pa
+    Instance.new("UICorner", c).CornerRadius = UDim.new(0, 14)
+    local s = Instance.new("UIStroke", c)
+    s.Color = Color3.fromRGB(255, 130, 190)
+    s.Thickness = 2
+    local p = Instance.new("TextLabel")
+    p.Size = UDim2.new(0, 40, 0, 40)
+    p.Position = UDim2.new(0, 10, 0.5, -20)
+    p.BackgroundTransparency = 1
+    p.Text = "🐾"
+    p.TextScaled = true
+    p.ZIndex = 3
+    p.Parent = c
+    return c
+end
+
+local function mkBtn(c, l, fn)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -70, 1, -15)
+    b.Position = UDim2.new(0, 60, 0, 7)
+    b.BackgroundColor3 = Color3.fromRGB(255, 170, 210)
+    b.BorderSizePixel = 0
+    b.Text = ""
+    b.ZIndex = 3
+    b.Parent = c
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+    local s = Instance.new("UIStroke", b)
+    s.Color = Color3.fromRGB(255, 100, 170)
+    s.Thickness = 2
+    local t = Instance.new("TextLabel")
+    t.Size = UDim2.new(1, -20, 1, 0)
+    t.Position = UDim2.new(0, 10, 0, 0)
+    t.BackgroundTransparency = 1
+    t.Text = l
+    t.TextColor3 = Color3.fromRGB(120, 30, 70)
+    t.TextScaled = true
+    t.Font = Enum.Font.GothamBold
+    t.TextXAlignment = Enum.TextXAlignment.Left
+    t.ZIndex = 4
+    t.Parent = b
+    b.MouseButton1Click:Connect(function() pcall(fn) end)
+    return b, t
+end
+
+-- ==============================
+-- メイン機能
+-- ==============================
+_G.FixP = 1e9
+_G.FixD = 1e5
+local llt, lle = nil, false
+local GE = RS:FindFirstChild("GrabEvents")
+local bhC = 0
+local bhS = {}
+
+local function isBH(o)
+    local n = o.Name:lower()
+    return n:find("blackhole") or n:find("black_hole") or n:find("black hole")
+end
+local function hasBA(o)
+    local p = o.Parent
+    while p and p ~= WS do
+        if isBH(p) then return true end
+        p = p.Parent
+    end
+    return false
+end
+local function ckBH(o)
+    if not isBH(o) or hasBA(o) or bhS[o] then return end
+    bhS[o] = true
+    bhC = bhC + 1
+    BH.Text = "BH: " .. bhC
+end
+for _, o in ipairs(WS:GetDescendants()) do ckBH(o) end
+WS.DescendantAdded:Connect(ckBH)
+
+local function startLag()
+    if lle then return end
+    lle = true
+    llt = task.spawn(function()
+        if not GE then return end
+        local cl = GE:FindFirstChild("CreateGrabLine")
+        if not cl then return end
+        while lle do
+            local t = WS:FindFirstChild("SpawnLocation") or WS:FindFirstChild("Spawn") or (LP.Character and LP.Character:FindFirstChild("HumanoidRootPart"))
+            if t then
+                for i = 1, 10 do
+                    pcall(function()
+                        cl:FireServer(t, CFrame.new(math.random(-1e9, 1e9), 0, math.random(-1e9, 1e9)))
+                    end)
+                end
+            end
+            task.wait(0.05)
+        end
+    end)
+end
+local function stopLag()
+    lle = false
+    if llt then task.cancel(llt) end
+end
+
+local cb, ia = nil, false
+local function allP()
+    local t = {}
+    for _, p in ipairs(P:GetPlayers()) do
+        if p ~= LP then table.insert(t, p) end
+    end
+    return t
+end
+local function mr()
+    return LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+end
+local function fix(tr, pos)
+    if not tr then return end
+    for _, v in ipairs(tr:GetChildren()) do
+        if v:IsA("BodyPosition") or v:IsA("BodyGyro") then v:Destroy() end
+    end
+    local bp = Instance.new("BodyPosition")
+    bp.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+    bp.P = _G.FixP
+    bp.D = _G.FixD
+    bp.Position = pos
+    bp.Parent = tr
+    local bg = Instance.new("BodyGyro")
+    bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
+    bg.P = _G.FixP
+    bg.D = _G.FixD
+    bg.CFrame = CFrame.new(pos)
+    bg.Parent = tr
+end
+local function unfix()
+    for _, p in ipairs(P:GetPlayers()) do
+        if p ~= LP then
+            local h = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if h then
+                for _, v in ipairs(h:GetChildren()) do
+                    if v:IsA("BodyPosition") or v:IsA("BodyGyro") then v:Destroy() end
+                end
+            end
+        end
+    end
+end
+local function spawnBlob()
+    local r = mr()
+    if not r then return nil end
+    local mt = RS:FindFirstChild("MenuToys")
+    if not mt then return nil end
+    local st = mt:FindFirstChild("SpawnToyRemoteFunction")
+    if not st then return nil end
+    pcall(function()
+        st:InvokeServer("CreatureBlobman", r.CFrame * CFrame.new(0, 0, -5), Vector3.new(0, 127, 0))
+    end)
+    task.wait(0.5)
+    local tf = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+    return tf and tf:FindFirstChild("CreatureBlobman")
+end
+local function sit(b)
+    if not b or not LP.Character then return end
+    local v = b:FindFirstChild("VehicleSeat")
+    if not v then return end
+    local h = LP.Character:FindFirstChildOfClass("Humanoid")
+    if h then pcall(function() v:Sit(h) end) end
+    task.wait(0.3)
+end
+
+local function kickSingle(t)
+    if ia or not t or t == LP then return end
+    ia = true
+    cb = spawnBlob()
+    if not cb then ia = false return end
+    sit(cb)
+    local r = mr()
+    if not r then ia = false return end
+    local sc = cb:FindFirstChild("BlobmanSeatAndOwnerScript")
+    if not sc then ia = false return end
+    local t0 = os.clock()
+    while os.clock() - t0 < 8 and t.Parent ~= nil do
+        local tr = t.Character and t.Character:FindFirstChild("HumanoidRootPart")
+        if tr then
+            pcall(function()
+                r.CFrame = tr.CFrame
+                r.AssemblyLinearVelocity = Vector3.zero
+            end)
+            task.wait()
+            pcall(function()
+                sc.CreatureGrab:FireServer(cb.LeftDetector, tr, cb.LeftDetector.LeftWeld)
+                sc.CreatureGrab:FireServer(cb.RightDetector, tr, cb.RightDetector.RightWeld)
+            end)
+            task.wait(0.03)
+            local lw = cb.LeftDetector:FindFirstChild("LeftWeld")
+            local rw = cb.RightDetector:FindFirstChild("RightWeld")
+            if lw and lw.Part1 == tr and rw and rw.Part1 == tr then break end
+        else
+            task.wait(0.05)
+        end
+    end
+    local r2 = mr()
+    local tr2 = t.Character and t.Character:FindFirstChild("HumanoidRootPart")
+    if r2 and tr2 then fix(tr2, r2.CFrame * CFrame.new(0, 2, 0).Position) end
+    while t.Parent ~= nil do
+        local tr = t.Character and t.Character:FindFirstChild("HumanoidRootPart")
+        local r3 = mr()
+        if tr and r3 then
+            local p = r3.CFrame * CFrame.new(0, 2, 0).Position
+            pcall(function()
+                tr.CFrame = CFrame.new(p)
+                tr.AssemblyLinearVelocity = Vector3.zero
+                tr.AssemblyAngularVelocity = Vector3.zero
+            end)
+            pcall(function()
+                sc.CreatureGrab:FireServer(cb.LeftDetector, tr, cb.LeftDetector.LeftWeld)
+                sc.CreatureGrab:FireServer(cb.RightDetector, tr, cb.RightDetector.RightWeld)
+            end)
+        end
+        task.wait(0.03)
+    end
+    if cb and cb.Parent then pcall(function() cb:Destroy() end) end
+    local tf = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+    if tf then
+        local b = tf:FindFirstChild("CreatureBlobman")
+        if b then pcall(function() b:Destroy() end) end
+    end
+    cb = nil
+    ia = false
+end
+
+local function kickAll()
+    if ia then return end
+    ia = true
+    local ap = allP()
+    if #ap == 0 then ia = false return end
+    cb = spawnBlob()
+    if not cb then ia = false return end
+    sit(cb)
+    local r = mr()
+    if not r then ia = false return end
+    for _, p in ipairs(ap) do
+        local tr = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+        if tr then
+            r.CFrame = tr.CFrame
+            r.AssemblyAngularVelocity = Vector3.zero
+            task.wait()
+            if (r.Position - tr.Position).Magnitude <= 35 then
+                for i = 1, 8 do
+                    if not tr.Parent or not cb.Parent then break end
+                    pcall(function()
+                        cb.BlobmanSeatAndOwnerScript.CreatureGrab:FireServer(cb.LeftDetector, tr, cb.LeftDetector.LeftWeld)
+                        cb.BlobmanSeatAndOwnerScript.CreatureRelease:FireServer(cb.LeftDetector.LeftWeld)
+                    end)
+                    task.wait()
+                end
+            end
+        end
+    end
+    r.CFrame = CFrame.new(0, 100, 0)
+    r.AssemblyLinearVelocity = Vector3.zero
+    task.wait(0.1)
+    for _, v in ipairs(cb:GetDescendants()) do
+        if v:IsA("BasePart") then pcall(function() v.Anchored = true end) end
+    end
+    task.wait(0.1)
+    local rad, h = 25, 110
+    for i, p in ipairs(ap) do
+        local tr = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+        if tr then
+            local a = math.rad((i - 1) * (360 / #ap))
+            local pos = Vector3.new(rad * math.cos(a), h, rad * math.sin(a))
+            tr.CFrame = CFrame.new(pos)
+            fix(tr, pos)
+        end
+    end
+    task.wait(0.1)
+    for _ = 1, 2 do
+        for _, p in ipairs(ap) do
+            local tr = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if tr then
+                task.spawn(function()
+                    pcall(function()
+                        RS.GrabEvents.SetNetworkOwner:FireServer(tr, CFrame.new(tr.Position))
+                        RS.GrabEvents.DestroyGrabLine:FireServer(tr)
+                    end)
+                end)
+            end
+        end
+        task.wait(0.1)
+    end
+    task.wait(0.3)
+    for _, p in ipairs(ap) do
+        local tr = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+        if tr then
+            task.spawn(function()
+                pcall(function()
+                    cb.BlobmanSeatAndOwnerScript.CreatureGrab:FireServer(cb.LeftDetector, tr, cb.LeftDetector.LeftWeld)
+                    cb.BlobmanSeatAndOwnerScript.CreatureGrab:FireServer(cb.RightDetector, tr, cb.RightDetector.RightWeld)
+                end)
+            end)
+        end
+    end
+    task.wait(0.1)
+    for _, v in ipairs(cb:GetDescendants()) do
+        if v:IsA("BasePart") then pcall(function() v.Anchored = false end) end
+    end
+    task.wait(1)
+    if cb and cb.Parent then pcall(function() cb:Destroy() end) end
+    local tf = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+    if tf then
+        local b = tf:FindFirstChild("CreatureBlobman")
+        if b then pcall(function() b:Destroy() end) end
+    end
+    cb = nil
+    ia = false
+end
+
+local bD = false
+local function bbreak()
+    if bD or not LP.Character or not LP.Character:FindFirstChild("HumanoidRootPart") then return end
+    local hm = LP.Character:FindFirstChildOfClass("Humanoid")
+    local oW, oJ
+    if hm then
+        oW, oJ = hm.WalkSpeed, hm.JumpPower
+        hm.WalkSpeed = 0
+        hm.JumpPower = 0
+    end
+    pcall(function()
+        local MT = RS:WaitForChild("MenuToys", 5)
+        local ST = MT and MT:FindFirstChild("SpawnToyRemoteFunction")
+        local DT = MT and MT:FindFirstChild("DestroyToy")
+        if not ST then return end
+        local hrp = LP.Character.HumanoidRootPart
+        local oC = hrp.CFrame
+        hrp.CFrame = CFrame.new(246.052, -7.35, 431.821)
+        task.wait(0.05)
+        ST:InvokeServer("InstrumentWoodwindOcarina",
+            CFrame.new(184.148834, -5.54824972, 498.136749, 0.829037189, -0.214714944, 0.516328275, 0, 0.923344612, 0.383972496, -0.559193552, -0.318327487, 0.765486956),
+            Vector3.new(0, 34, 0))
+        task.wait(0.2)
+        local tf = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+        local oc = tf and tf:FindFirstChild("InstrumentWoodwindOcarina")
+        if oc and oc:FindFirstChild("HoldPart") then
+            pcall(function()
+                oc.HoldPart.HoldItemRemoteFunction:InvokeServer(oc, LP.Character)
+            end)
+            task.wait(0.2)
+        end
+        LP.Character.HumanoidRootPart.CFrame = CFrame.new(304.06, 25.77, 488.54)
+        task.wait(0.05)
+        if DT and oc then DT:FireServer(oc) end
+        task.wait(0.05)
+        LP.Character.HumanoidRootPart.CFrame = oC
+        bD = true
+    end)
+    if hm then
+        hm.WalkSpeed = oW or 16
+        hm.JumpPower = oJ or 50
+    end
+end
+
+-- メインタブボタン
+mkBtn(card(MSC, 60), "ラグ＆Kick All", function()
+    if lle then return end
+    bhC = 0
+    bhS = {}
+    BH.Text = "BH: 0"
+    startLag()
+    task.spawn(function() pcall(kickAll) end)
+end)
+mkBtn(card(MSC, 60), "ラグなしKick All", function()
+    bhC = 0
+    bhS = {}
+    BH.Text = "BH: 0"
+    task.spawn(function() pcall(kickAll) end)
+end)
+mkBtn(card(MSC, 60), "固定解除", unfix)
+mkBtn(card(MSC, 60), "ラグ停止", function()
+    if lle then stopLag() end
+end)
+mkBtn(card(MSC, 60), "バリア破壊", function()
+    task.spawn(function() pcall(bbreak) end)
+end)
+mkBtn(card(MSC, 60), "自動バリア破壊", function()
+    task.spawn(function()
+        while not bD do
+            pcall(bbreak)
+            task.wait(5)
+        end
+    end)
+end)
+
+local iC = card(MSC, 60)
+local iL = Instance.new("TextLabel")
+iL.Size = UDim2.new(1, -70, 1, -20)
+iL.Position = UDim2.new(0, 60, 0, 10)
+iL.BackgroundTransparency = 1
+iL.Text = "🐾 ねこなのツール"
+iL.TextColor3 = Color3.fromRGB(200, 80, 130)
+iL.TextScaled = true
+iL.Font = Enum.Font.GothamBold
+iL.TextXAlignment = Enum.TextXAlignment.Left
+iL.ZIndex = 4
+iL.Parent = iC
+
+-- プレイヤータブ
+local pR = {}
+
+-- スパムキック関数（先行定義）
+local spamKickOn = false
+local spamKickTarget = nil
+local spamKickConn = nil
+local lagSpamRunning = false
+
+local function startLagSpam()
+    if lagSpamRunning then return end
+    lagSpamRunning = true
+    local GE = RS:FindFirstChild("GrabEvents")
+    local cl = GE and GE:FindFirstChild("CreateGrabLine")
+    if not cl then return end
+    task.spawn(function()
+        while lagSpamRunning do
+            local t = WS:FindFirstChild("SpawnLocation") or WS:FindFirstChild("Spawn") or (LP.Character and LP.Character:FindFirstChild("HumanoidRootPart"))
+            if t then
+                pcall(function()
+                    cl:FireServer(t, CFrame.new(math.random(-2e9,2e9), 0, math.random(-2e9,2e9)))
+                end)
+            end
+            task.wait()
+        end
+    end)
+end
+
+local function stopLagSpam()
+    lagSpamRunning = false
+end
+
+local function startSpamKick(targetPlr)
+    if not targetPlr then return end
+    spamKickOn = true
+    spamKickTarget = targetPlr
+    startLagSpam()
+    
+    local GE = RS:FindFirstChild("GrabEvents")
+    local SetNO = GE and GE:FindFirstChild("SetNetworkOwner")
+    local DestroyGL = GE and GE:FindFirstChild("DestroyGrabLine")
+    
+    spamKickConn = task.spawn(function()
+        while spamKickOn and spamKickTarget and spamKickTarget.Parent do
+            local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            local tRoot = spamKickTarget.Character and spamKickTarget.Character:FindFirstChild("HumanoidRootPart")
+            if myRoot and tRoot then
+                if (myRoot.Position - tRoot.Position).Magnitude > 25 then
+                    pcall(function() myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 3) end)
+                end
+                pcall(function()
+                    if SetNO then SetNO:FireServer(tRoot, tRoot.CFrame) end
+                    if DestroyGL then DestroyGL:FireServer(tRoot) end
+                end)
+                local bp = tRoot:FindFirstChild("SpamKickBP")
+                if not bp then
+                    bp = Instance.new("BodyPosition")
+                    bp.Name = "SpamKickBP"
+                    bp.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+                    bp.P = 1e9
+                    bp.D = 1e5
+                    bp.Parent = tRoot
+                end
+                bp.Position = myRoot.Position + Vector3.new(5, 10, 5)
+                tRoot.AssemblyLinearVelocity = Vector3.zero
+                tRoot.AssemblyAngularVelocity = Vector3.zero
+            end
+            task.wait()
+        end
+        if spamKickTarget and spamKickTarget.Character then
+            local tRoot = spamKickTarget.Character:FindFirstChild("HumanoidRootPart")
+            if tRoot and tRoot:FindFirstChild("SpamKickBP") then
+                tRoot.SpamKickBP:Destroy()
+            end
+        end
+        stopLagSpam()
+        spamKickOn = false
+    end)
+end
+
+local function stopSpamKick()
+    spamKickOn = false
+    stopLagSpam()
+    if spamKickConn then pcall(function() task.cancel(spamKickConn) end) end
+end
+
+
+local function mkRow(pl)
+    local r = Instance.new("Frame")
+    r.Size = UDim2.new(1, -10, 0, 50)
+    r.BackgroundColor3 = Color3.fromRGB(255, 245, 252)
+    r.BorderSizePixel = 0
+    r.ZIndex = 2
+    r.Parent = PSC
+    Instance.new("UICorner", r).CornerRadius = UDim.new(0, 12)
+    local rs = Instance.new("UIStroke", r)
+    rs.Color = Color3.fromRGB(255, 130, 190)
+    rs.Thickness = 2
+    local ic = Instance.new("ImageLabel")
+    ic.Size = UDim2.new(0, 40, 0, 40)
+    ic.Position = UDim2.new(0, 8, 0.5, -20)
+    ic.BackgroundColor3 = Color3.fromRGB(255, 220, 240)
+    ic.BorderSizePixel = 0
+    ic.ZIndex = 3
+    ic.Parent = r
+    Instance.new("UICorner", ic).CornerRadius = UDim.new(1, 0)
+    local ics = Instance.new("UIStroke", ic)
+    ics.Color = Color3.fromRGB(255, 100, 170)
+    ics.Thickness = 2
+    pcall(function()
+        ic.Image = "rbxthumb://type=AvatarHeadShot&id=" .. pl.UserId .. "&w=150&h=150"
+    end)
+    local dn = Instance.new("TextLabel")
+    dn.Size = UDim2.new(1, -120, 0, 22)
+    dn.Position = UDim2.new(0, 55, 0, 5)
+    dn.BackgroundTransparency = 1
+    dn.Text = pl.DisplayName
+    dn.TextColor3 = Color3.fromRGB(120, 30, 70)
+    dn.TextScaled = true
+    dn.Font = Enum.Font.GothamBold
+    dn.TextXAlignment = Enum.TextXAlignment.Left
+    dn.ZIndex = 3
+    dn.Parent = r
+    local un = Instance.new("TextLabel")
+    un.Size = UDim2.new(0, 100, 0, 18)
+    un.Position = UDim2.new(1, -110, 0, 16)
+    un.TextXAlignment = Enum.TextXAlignment.Right
+    un.BackgroundTransparency = 1
+    un.Text = "@" .. pl.Name
+    un.TextColor3 = Color3.fromRGB(180, 100, 140)
+    un.TextScaled = true
+    un.Font = Enum.Font.Gotham
+    un.TextXAlignment = Enum.TextXAlignment.Left
+    un.ZIndex = 3
+    un.Parent = r
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, 0, 1, 0)
+    b.BackgroundTransparency = 1
+    b.Text = ""
+    b.ZIndex = 4
+    b.Parent = r
+    b.MouseButton1Click:Connect(function()
+        if pl ~= LP then
+            _G.SelectedSpamTarget = pl
+            -- 選択表示を更新
+            if _G.UpdateSpamLabel then _G.UpdateSpamLabel() end
+        end
+    end)
+    return r
+end
+local function refreshP()
+    for _, r in ipairs(pR) do
+        if r and r.Parent then r:Destroy() end
+    end
+    pR = {}
+    for _, pl in ipairs(P:GetPlayers()) do
+        if pl ~= LP then table.insert(pR, mkRow(pl)) end
+    end
+end
+refreshP()
+P.PlayerAdded:Connect(function() task.wait(0.5) refreshP() end)
+P.PlayerRemoving:Connect(function() task.wait(0.3) refreshP() end)
+
+-- ==============================
+-- ESP機能（2つ目のスクリプト）
+-- ==============================
+local NS_ESP = false
+local NS_List = {}
+local function refreshNS()
+    for _, h in ipairs(NS_List) do
+        if h and h.Parent then h:Destroy() end
+    end
+    NS_List = {}
+    if not NS_ESP then return end
+    for _, o in ipairs(WS:GetDescendants()) do
+        if o.Name == "NinjaShuriken" then
+            local h = Instance.new("Highlight")
+            h.FillColor = Color3.fromRGB(255, 60, 60)
+            h.OutlineColor = Color3.fromRGB(255, 60, 60)
+            h.FillTransparency = 0.5
+            h.OutlineTransparency = 0
+            h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            h.Adornee = o
+            h.Parent = G
+            table.insert(NS_List, h)
+        end
+    end
+end
+
+local BH_ESP = false
+local BH_List = {}
+local function refreshBH()
+    for _, h in ipairs(BH_List) do
+        if h and h.Parent then h:Destroy() end
+    end
+    BH_List = {}
+    if not BH_ESP then return end
+    for _, o in ipairs(WS:GetDescendants()) do
+        if isBH(o) and not hasBA(o) then
+            local h = Instance.new("Highlight")
+            h.FillColor = Color3.fromRGB(180, 60, 255)
+            h.OutlineColor = Color3.fromRGB(180, 60, 255)
+            h.FillTransparency = 0.5
+            h.OutlineTransparency = 0
+            h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            h.Adornee = o
+            h.Parent = G
+            table.insert(BH_List, h)
+        end
+    end
+end
+
+local PL_ESP = false
+local PL_List = {}
+local function refreshPL()
+    for _, d in ipairs(PL_List) do
+        if d.bb and d.bb.Parent then d.bb:Destroy() end
+    end
+    PL_List = {}
+    if not PL_ESP then return end
+    for _, p in ipairs(P:GetPlayers()) do
+        if p ~= LP then
+            local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local bb = Instance.new("BillboardGui")
+                bb.Name = "CatESP"
+                bb.Size = UDim2.new(0, 30, 0, 30)
+                bb.AlwaysOnTop = true
+                bb.LightInfluence = 0
+                bb.Adornee = hrp
+                bb.Parent = G
+                local dot = Instance.new("Frame")
+                dot.Size = UDim2.new(0, 20, 0, 20)
+                dot.Position = UDim2.new(0.5, -10, 0.5, -10)
+                dot.BackgroundColor3 = Color3.fromRGB(255, 40, 40)
+                dot.BorderSizePixel = 0
+                dot.Parent = bb
+                Instance.new("UICorner", dot).CornerRadius = UDim.new(0, 3)
+                local st = Instance.new("UIStroke", dot)
+                st.Color = Color3.fromRGB(255, 255, 255)
+                st.Thickness = 1.5
+                table.insert(PL_List, {bb = bb, dot = dot, plr = p})
+            end
+        end
+    end
+end
+
+task.spawn(function()
+    while task.wait(0.03) do
+        if PL_ESP then
+            for _, d in ipairs(PL_List) do
+                if d.dot and d.dot.Parent then
+                    local t = os.clock()
+                    local s = 1 + math.sin(t * 4) * 0.4
+                    d.dot.Size = UDim2.new(0, 20 * s, 0, 20 * s)
+                    d.dot.Position = UDim2.new(0.5, -10 * s, 0.5, -10 * s)
+                    d.dot.Rotation = (t * 180) % 360
+                    d.dot.BackgroundColor3 = s > 1.1 and Color3.fromRGB(60, 120, 255) or Color3.fromRGB(255, 40, 40)
+                end
+            end
+        end
+    end
+end)
+
+local NS_Self = false
+local NS_Self_Task = nil
+local function spawnShuriken()
+    local r = mr()
+    if not r then return nil end
+    local mt = RS:FindFirstChild("MenuToys")
+    if not mt then return nil end
+    local st = mt:FindFirstChild("SpawnToyRemoteFunction")
+    if not st then return nil end
+    pcall(function()
+        st:InvokeServer("NinjaShuriken", r.CFrame, Vector3.zero)
+    end)
+    task.wait(0.3)
+    local tf = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+    return tf and tf:FindFirstChild("NinjaShuriken")
+end
+local function startNSSelf()
+    if NS_Self_Task then task.cancel(NS_Self_Task) end
+    NS_Self_Task = task.spawn(function()
+        while NS_Self do
+            local r = mr()
+            if r then
+                local tf = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+                local ns = tf and tf:FindFirstChild("NinjaShuriken")
+                if not ns then ns = spawnShuriken() end
+                if ns then
+                    pcall(function()
+                        local h = ns:FindFirstChild("Handle") or ns.PrimaryPart or ns:FindFirstChildWhichIsA("BasePart")
+                        if h then
+                            h.CFrame = r.CFrame
+                            h.Anchored = true
+                            h.CanCollide = false
+                        end
+                    end)
+                end
+            end
+            task.wait(0.1)
+        end
+    end)
+end
+local function stopNSSelf()
+    NS_Self = false
+    if NS_Self_Task then
+        task.cancel(NS_Self_Task)
+        NS_Self_Task = nil
+    end
+    local tf = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+    if tf then
+        local ns = tf:FindFirstChild("NinjaShuriken")
+        if ns then
+            local mt = RS:FindFirstChild("MenuToys")
+            local dt = mt and mt:FindFirstChild("DestroyToy")
+            if dt then pcall(function() dt:FireServer(ns) end) end
+        end
+    end
+end
+
+-- ESPタブボタン
+local _, nsL = mkBtn(card(ESC, 60), "NinjaShuriken ESP: OFF", function()
+    NS_ESP = not NS_ESP
+    nsL.Text = NS_ESP and "NinjaShuriken ESP: ON" or "NinjaShuriken ESP: OFF"
+    refreshNS()
+end)
+local _, bhL = mkBtn(card(ESC, 60), "Black Hole ESP: OFF", function()
+    BH_ESP = not BH_ESP
+    bhL.Text = BH_ESP and "Black Hole ESP: ON" or "Black Hole ESP: OFF"
+    refreshBH()
+end)
+local _, plL = mkBtn(card(ESC, 60), "プレイヤー ESP: OFF", function()
+    PL_ESP = not PL_ESP
+    plL.Text = PL_ESP and "プレイヤー ESP: ON" or "プレイヤー ESP: OFF"
+    refreshPL()
+end)
+local _, selfL = mkBtn(card(ESC, 60), "自分にShuriken: OFF", function()
+    NS_Self = not NS_Self
+    selfL.Text = NS_Self and "自分にShuriken: ON" or "自分にShuriken: OFF"
+    if NS_Self then startNSSelf() else stopNSSelf() end
+end)
+
+task.spawn(function()
+    while task.wait(1) do
+        if NS_ESP then refreshNS() end
+        if BH_ESP then refreshBH() end
+        if PL_ESP then refreshPL() end
+    end
+end)
+
+-- UI操作
+
+-- ==============================
+-- アンチタブ（全追加）
+-- ==============================
+local BA = mkTab("アンチ", 4)
+local ASC = mkSC(false)
+
+-- タブ切り替え再接続
+BM.MouseButton1Click:Connect(function() MSC.Visible=true PSC.Visible=false ESC.Visible=false ASC.Visible=false end)
+BP.MouseButton1Click:Connect(function() MSC.Visible=false PSC.Visible=true ESC.Visible=false ASC.Visible=false end)
+BE.MouseButton1Click:Connect(function() MSC.Visible=false PSC.Visible=false ESC.Visible=true ASC.Visible=false end)
+BA.MouseButton1Click:Connect(function() MSC.Visible=false PSC.Visible=false ESC.Visible=false ASC.Visible=true end)
+
+local RunService = game:GetService("RunService")
+local RS = game:GetService("ReplicatedStorage")
+local WS = game:GetService("Workspace")
+
+-- 状態
+local states = {
+    AntiGrab = false,
+    AntiBlobman = false,
+    AntiVoid = false,
+    AntiGucci = false,
+    AntiExplosion = false,
+    AntiSticky = false,
+    AntiBurn = false,
+    AntiLag = false,
+    AntiPaint = false,
+    AntiKick = false,
+    AntiInputLag = false,
+}
+
+local conns = {}
+
+local function setConn(name, conn)
+    if conns[name] then pcall(function() conns[name]:Disconnect() end) end
+    conns[name] = conn
+end
+
+-- Anti Grab
+local function toggleAntiGrab(on)
+    states.AntiGrab = on
+    setConn("AntiGrab", nil)
+    if on then
+        setConn("AntiGrab", RunService.Heartbeat:Connect(function()
+            pcall(function()
+                local char = LP.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp and RS:FindFirstChild("CharacterEvents") and RS.CharacterEvents:FindFirstChild("RagdollRemote") then
+                    RS.CharacterEvents.RagdollRemote:FireServer(hrp, 0)
+                end
+            end)
+        end))
+    end
+end
+
+-- Anti Blobman
+local function toggleAntiBlobman(on)
+    states.AntiBlobman = on
+    setConn("AntiBlobman", nil)
+    if on then
+        local function strip(toy)
+            if toy.Name == "CreatureBlobman" then
+                pcall(function()
+                    if toy:FindFirstChild("LeftDetector") then toy.LeftDetector:Destroy() end
+                    if toy:FindFirstChild("RightDetector") then toy.RightDetector:Destroy() end
+                end)
+            end
+        end
+        for _, t in ipairs(WS:GetDescendants()) do strip(t) end
+        setConn("AntiBlobman", WS.DescendantAdded:Connect(function(t)
+            if states.AntiBlobman then strip(t) end
+        end))
+    end
+end
+
+-- Anti Void
+local function toggleAntiVoid(on)
+    states.AntiVoid = on
+    setConn("AntiVoid", nil)
+    if on then
+        setConn("AntiVoid", RunService.Heartbeat:Connect(function()
+            local char = LP.Character
+            if char and char.PrimaryPart and char.PrimaryPart.Position.Y < -50 then
+                char.PrimaryPart.CFrame = CFrame.new(char.PrimaryPart.Position.X, 100, char.PrimaryPart.Position.Z)
+                char.PrimaryPart.AssemblyLinearVelocity = Vector3.zero
+            end
+        end))
+    end
+end
+
+-- Anti Gucci
+local function toggleAntiGucci(on)
+    states.AntiGucci = on
+    setConn("AntiGucci", nil)
+    if on then
+        setConn("AntiGucci", RunService.Heartbeat:Connect(function()
+            pcall(function()
+                local char = LP.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp and RS:FindFirstChild("CharacterEvents") and RS.CharacterEvents:FindFirstChild("RagdollRemote") then
+                    RS.CharacterEvents.RagdollRemote:FireServer(hrp, 0)
+                end
+            end)
+        end))
+    end
+end
+
+-- Anti Explosion
+local function toggleAntiExplosion(on)
+    states.AntiExplosion = on
+    setConn("AntiExplosion", nil)
+    if on then
+        setConn("AntiExplosion", WS.ChildAdded:Connect(function(model)
+            if not states.AntiExplosion then return end
+            if model.Name == "Part" then
+                local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and (model.Position - hrp.Position).Magnitude <= 25 then
+                    pcall(function() hrp.Anchored = true end)
+                    task.delay(0.4, function() pcall(function() if hrp then hrp.Anchored = false end end) end)
+                end
+            end
+        end))
+    end
+end
+
+-- Anti Sticky
+local function toggleAntiSticky(on)
+    states.AntiSticky = on
+    pcall(function()
+        local s = LP.PlayerScripts:FindFirstChild("StickyPartsTouchDetection")
+        if s then s.Disabled = on end
+    end)
+end
+
+-- Anti Burn (simplified)
+local function toggleAntiBurn(on)
+    states.AntiBurn = on
+    setConn("AntiBurn", nil)
+    if on then
+        setConn("AntiBurn", RunService.Heartbeat:Connect(function()
+            pcall(function()
+                local char = LP.Character
+                if char then
+                    for _, v in ipairs(char:GetDescendants()) do
+                        if v:IsA("Fire") or v.Name:lower():find("burn") or v.Name:lower():find("fire") then
+                            v:Destroy()
+                        end
+                    end
+                end
+            end)
+        end))
+    end
+end
+
+-- Anti Lag (flag only - simplified)
+local function toggleAntiLag(on)
+    states.AntiLag = on
+end
+
+-- Anti Paint (delete paint parts nearby)
+local function toggleAntiPaint(on)
+    states.AntiPaint = on
+    setConn("AntiPaint", nil)
+    if on then
+        setConn("AntiPaint", RunService.Heartbeat:Connect(function()
+            if not states.AntiPaint then return end
+            pcall(function()
+                for _, v in ipairs(WS:GetDescendants()) do
+                    if v.Name:lower():find("paint") or v.Name:lower():find("spray") then
+                        if v:IsA("BasePart") and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                            if (v.Position - LP.Character.HumanoidRootPart.Position).Magnitude < 40 then
+                                v:Destroy()
+                            end
+                        end
+                    end
+                end
+            end)
+        end))
+    end
+end
+
+-- Anti Kick (Shuriken simplified)
+local antiKickTask = nil
+local function toggleAntiKick(on)
+    states.AntiKick = on
+    if antiKickTask then pcall(function() task.cancel(antiKickTask) end) antiKickTask = nil end
+    if on then
+        antiKickTask = task.spawn(function()
+            while states.AntiKick do
+                pcall(function()
+                    local mt = RS:FindFirstChild("MenuToys")
+                    local st = mt and mt:FindFirstChild("SpawnToyRemoteFunction")
+                    local dt = mt and mt:FindFirstChild("DestroyToy")
+                    local folder = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+                    local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                    if st and hrp then
+                        local existing = folder and folder:FindFirstChild("NinjaShuriken")
+                        if not existing then
+                            st:InvokeServer("NinjaShuriken", hrp.CFrame, Vector3.zero)
+                        end
+                    end
+                end)
+                task.wait(1)
+            end
+        end)
+    else
+        pcall(function()
+            local folder = WS:FindFirstChild(LP.Name .. "SpawnedInToys")
+            local mt = RS:FindFirstChild("MenuToys")
+            local dt = mt and mt:FindFirstChild("DestroyToy")
+            if folder and dt then
+                for _, v in ipairs(folder:GetChildren()) do
+                    if v.Name == "NinjaShuriken" or v.Name == "AntiKick" then
+                        dt:FireServer(v)
+                    end
+                end
+            end
+        end)
+    end
+end
+
+-- Anti Input Lag (item loop simplified)
+local antiInputTask = nil
+local function toggleAntiInputLag(on)
+    states.AntiInputLag = on
+    if antiInputTask then pcall(function() task.cancel(antiInputTask) end) antiInputTask = nil end
+    if on then
+        antiInputTask = task.spawn(function()
+            while states.AntiInputLag do
+                pcall(function()
+                    local mt = RS:FindFirstChild("MenuToys")
+                    local st = mt and mt:FindFirstChild("SpawnToyRemoteFunction")
+                    local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                    if st and hrp then
+                        st:InvokeServer("FoodHamburger", hrp.CFrame * CFrame.new(0, 5, 0), Vector3.zero)
+                    end
+                end)
+                task.wait(0.5)
+            end
+        end)
+    end
+end
+
+-- UI作成ヘルパー
+local function makeAntiToggle(label, key, toggleFunc)
+    local c = card(ASC, 52)
+    local state = false
+    local _, t = mkBtn(c, label .. ": OFF", function()
+        state = not state
+        t.Text = label .. (state and ": ON" or ": OFF")
+        toggleFunc(state)
+    end)
+end
+
+makeAntiToggle("Anti Grab", "AntiGrab", toggleAntiGrab)
+makeAntiToggle("Anti Blobman", "AntiBlobman", toggleAntiBlobman)
+makeAntiToggle("Anti Void", "AntiVoid", toggleAntiVoid)
+makeAntiToggle("Anti Gucci", "AntiGucci", toggleAntiGucci)
+makeAntiToggle("Anti Explosion", "AntiExplosion", toggleAntiExplosion)
+makeAntiToggle("Anti Sticky", "AntiSticky", toggleAntiSticky)
+makeAntiToggle("Anti Burn", "AntiBurn", toggleAntiBurn)
+makeAntiToggle("Anti Lag", "AntiLag", toggleAntiLag)
+makeAntiToggle("Anti Paint", "AntiPaint", toggleAntiPaint)
+makeAntiToggle("Anti Kick (Shuriken)", "AntiKick", toggleAntiKick)
+makeAntiToggle("Anti Input Lag", "AntiInputLag", toggleAntiInputLag)
+
+local infoC = card(ASC, 48)
+local infoL = Instance.new("TextLabel")
+infoL.Size = UDim2.new(1, -70, 1, -8)
+infoL.Position = UDim2.new(0, 60, 0, 4)
+infoL.BackgroundTransparency = 1
+infoL.Text = "🐾 アンチ全機能"
+infoL.TextColor3 = Color3.fromRGB(200, 80, 130)
+infoL.TextScaled = true
+infoL.Font = Enum.Font.GothamBold
+infoL.TextXAlignment = Enum.TextXAlignment.Left
+infoL.ZIndex = 4
+infoL.Parent = infoC
+
+
+-- ==============================
+-- スパムキック追加
+-- ==============================
+local spamCard = card(MSC, 60)
+local _, spamBtn = mkBtn(spamCard, "（旧）", function()
+    if spamKickOn then
+        stopSpamKick()
+    else
+        -- 最初の他プレイヤーをターゲット（簡易）
+        local targets = {}
+        for _, p in ipairs(P:GetPlayers()) do
+            if p ~= LP then table.insert(targets, p) end
+        end
+        if #targets > 0 then
+            startSpamKick(targets[1])
+        end
+    end
+end)
+
+
+-- スパムキック UI（選択 → 実行）
+_G.SelectedSpamTarget = nil
+
+local selectCard = card(MSC, 70)
+local selectLabel = Instance.new("TextLabel")
+selectLabel.Size = UDim2.new(1, -70, 1, -15)
+selectLabel.Position = UDim2.new(0, 60, 0, 7)
+selectLabel.BackgroundTransparency = 1
+selectLabel.Text = "対象: 未選択（プレイヤータブで選択）"
+selectLabel.TextColor3 = Color3.fromRGB(120, 30, 70)
+selectLabel.TextScaled = true
+selectLabel.Font = Enum.Font.GothamBold
+selectLabel.TextXAlignment = Enum.TextXAlignment.Left
+selectLabel.ZIndex = 4
+selectLabel.Parent = selectCard
+
+_G.UpdateSpamLabel = function()
+    if _G.SelectedSpamTarget and _G.SelectedSpamTarget.Parent then
+        selectLabel.Text = "対象: " .. _G.SelectedSpamTarget.DisplayName .. " (@" .. _G.SelectedSpamTarget.Name .. ")"
+    else
+        selectLabel.Text = "対象: 未選択（プレイヤータブで選択）"
+        _G.SelectedSpamTarget = nil
+    end
+end
+
+local execCard = card(MSC, 55)
+mkBtn(execCard, "スパムキック 実行", function()
+    if not _G.SelectedSpamTarget or not _G.SelectedSpamTarget.Parent then
+        selectLabel.Text = "対象: 先にプレイヤータブで選んでください"
+        return
+    end
+    stopSpamKick()
+    task.spawn(function() startSpamKick(_G.SelectedSpamTarget) end)
+    selectLabel.Text = "実行中: " .. _G.SelectedSpamTarget.DisplayName
+end)
+
+local stopCard = card(MSC, 55)
+mkBtn(stopCard, "スパムキック 停止", function()
+    stopSpamKick()
+    _G.UpdateSpamLabel()
+end)
+
+local op = false
+T.MouseButton1Click:Connect(function()
+    op = not op
+    M.Visible = op
+end)
+CB.MouseButton1Click:Connect(function()
+    op = false
+    M.Visible = false
+end)
+
+local function drag(ob)
+    local d, s, sp = false, nil, nil
+    ob.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+            d = true
+            s = i.Position
+            sp = ob.Position
+        end
+    end)
+    ob.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+            d = false
+        end
+    end)
+    UIS.InputChanged:Connect(function(i)
+        if d and (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseMovement) then
+            local dl = i.Position - s
+            ob.Position = UDim2.new(sp.X.Scale, sp.X.Offset + dl.X, sp.Y.Scale, sp.Y.Offset + dl.Y)
+        end
+    end)
+end
+drag(T)
+drag(H)
